@@ -1,0 +1,16 @@
+{
+  "name": "fill-transport-detail-sheet",
+  "version": "2.0.0",
+  "description": "Fill Chinese transport reimbursement Excel sheets from Didi/Hellobike ride itinerary PDFs or pasted tables",
+  "scripts": {
+    "fill": "node scripts/fill_transport_sheet.js"
+  },
+  "dependencies": {
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "private": true
+}

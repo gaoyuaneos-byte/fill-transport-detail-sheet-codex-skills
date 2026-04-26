@@ -1,3 +1,12 @@
 display_name: Fill Transport Detail Sheet
-short_description: Fill Chinese transport reimbursement Excel sheets from ride itinerary PDFs or pasted tables.
-default_prompt: Fill the transport detail workbook from the ride itinerary files in the current folder, preserve the template formatting, and verify row counts and totals.
+short_description: Fill Chinese transport reimbursement Excel sheets from Didi/Hellobike ride itinerary PDFs or pasted tables.
+default_prompt: >
+  Fill the transport detail workbook from the ride itinerary files in the current folder.
+
+  Steps:
+  1. List files to find the template (交通明细表.xlsx) and itinerary PDFs.
+  2. Run the fill script with appropriate --project-no, --project-name, and --clear-existing.
+  3. The script auto-detects Didi vs Hellobike format; use --source-format to override if needed.
+  4. For blank/partial PDFs, warn the user and ask for pasted data (--trips-json).
+  5. After writing, verify row count, serial number continuity, and amount total.
+  6. Report the output file path, row count, and amount total to the user.

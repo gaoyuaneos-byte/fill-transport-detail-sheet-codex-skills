@@ -14,27 +14,10 @@ Use this workflow for:
 - Hellobike/哈啰 pasted tables or PDFs with missing text
 - Excel templates whose data columns are: `序号, 项目号, 项目名称, 日期, 城市, 起点, 终点, 金额(RMB), 说明（工作内容）`
 
-## Workflow
-
-1. List files in the working directory. Identify the active `交通明细表.xlsx` and all current itinerary PDFs/tables.
-2. Read the workbook with `xlsx`; inspect sheet name, `!ref`, header row, existing project values, and whether old project rows need clearing.
-3. Extract PDF text with `pdf-parse`. Render or table-extract suspicious PDFs when text is incomplete.
-4. If a PDF table is blank or totals only, tell the user exactly what is missing and ask for/paste the ride table. Do not invent rows.
-5. Fill rows using the template's existing column widths/styles. Usually clear old data rows and keep rows 1-4.
-6. For project metadata, prefer explicit user input; otherwise infer conservatively from existing paths, filenames, destinations, or prior workbook rows and mention the assumption.
-7. Sort rows by departure time unless the user asks to preserve source order.
-8. Put toll/highway fee rows (`高速费`) in their own amount rows. If the user says no work content for these rows, leave the note blank.
-9. If the user provides date-to-work-content mapping, set the note column by trip date. For dates not provided, keep route notes unless asked to blank them.
-10. Validate before final response: data row count, continuous serial numbers, amount total against PDF/pasted totals, and representative row samples.
-
-## Reusable Script
-
-Use `scripts/fill_transport_sheet.js` as a helper when practical.
-
-Typical command:
+## Quick Start
 
 ```powershell
-node C:\Users\Administrator\.codex\skills\fill-transport-detail-sheet\scripts\fill_transport_sheet.js `
+node scripts/fill_transport_sheet.js `
   --source "交通明细表.xlsx" `
   --target "交通明细表_已填.xlsx" `
   --project-no "PAEE2512025" `
@@ -42,14 +25,35 @@ node C:\Users\Administrator\.codex\skills\fill-transport-detail-sheet\scripts\fi
   --clear-existing
 ```
 
-Useful options:
-- `--pdf-dir <dir>`: directory containing PDFs; defaults to current working directory
-- `--trips-json <file>`: use manually prepared trip records instead of PDF extraction
-- `--work-json <file>`: date-to-work-content map, e.g. `{ "2026-01-20": "..." }`
-- `--blank-highway-notes`: blank notes for rows whose `feeType` is `高速费`
-- `--target <file>`: always write a new output workbook unless the user explicitly asks to overwrite
+## Workflow
 
-Trip JSON format:
+1. List files in the working directory. Identify the active `交通明细表.xlsx` and all current itinerary PDFs/tables.
+2. Read the workbook with `xlsx`; the script auto-detects the header row and data start position.
+3. Extract PDF text with `pdf-parse`. The script auto-detects Didi vs Hellobike format by filename and content.
+4. If a PDF table is blank or totals only, the script warns and continues. Tell the user exactly what is missing and ask for/paste the ride table. Do not invent rows.
+5. Fill rows using the template's existing column widths/styles from the detected data row.
+6. For project metadata, prefer explicit user input; otherwise infer conservatively from existing paths, filenames, destinations, or prior workbook rows and mention the assumption.
+7. Sort rows by departure time unless the user asks to preserve source order.
+8. Put toll/highway fee rows (`高速费`) in their own amount rows. If the user says no work content for these rows, use `--blank-highway-notes`.
+9. If the user provides date-to-work-content mapping, set the note column by trip date. For dates not provided, keep route notes unless asked to blank them.
+10. Validate before final response: data row count, continuous serial numbers, amount total against PDF/pasted totals, and representative row samples.
+
+## CLI Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--source` | Template workbook path | `交通明细表.xlsx` |
+| `--target` | Output workbook path | `交通明细表_已填.xlsx` |
+| `--project-no` | Project number **(required)** | — |
+| `--project-name` | Project name **(required)** | — |
+| `--pdf-dir` | Directory containing itinerary PDFs | current directory |
+| `--source-format` | Force parser: `didi`, `hellobike`, or `auto` | `auto` |
+| `--trips-json` | Use manually prepared trip records instead of PDFs | — |
+| `--work-json` | Date-to-work-content map: `{"2026-01-20":"..."}` | — |
+| `--clear-existing` | Clear old data rows before writing | `false` |
+| `--blank-highway-notes` | Leave notes blank for 高速费 rows | `false` |
+
+## Trip JSON Format
 
 ```json
 [
@@ -58,17 +62,42 @@ Trip JSON format:
     "city": "合肥市",
     "start": "肥东县|畅和家园-西南门",
     "end": "包河区|合肥南站-西进站口",
-    "amount": 39.1,
+    "amount": 39.10,
     "feeType": "行程费"
   }
 ]
 ```
 
+Use `"feeType": "高速费"` for toll/highway rows.
+
+## Parsers
+
+### Didi (滴滴) Parser
+
+Handles PDFs containing: 快车, 特惠快车, 专车, 优享, 出租车, 顺风车, 独享.
+
+Address splitting uses `区|`/`县|`/`路|` pipe-delimited district markers to separate start/end locations. Falls back to midpoint splitting when markers are absent.
+
+### Hellobike (哈啰) Parser
+
+Handles tab-separated or multi-space-separated pasted tables with `YYYY-MM-DD HH:mm` date-time format. Header lines containing 日期/起点/终点 are auto-skipped.
+
+### Auto-Detection
+
+Format is detected by filename keywords (`滴滴`/`didi` → Didi, `哈啰`/`hellobike`/`顺风车` → Hellobike) and content patterns. Override with `--source-format`.
+
 ## Notes And Edge Cases
 
-- Didi PDFs often split words and city names across lines (`特惠快\n车`, `杭州\n市`). Normalize whitespace before parsing.
-- Some Hellobike PDFs show a grid but no row text. Confirm by text extraction plus screenshot/table extraction, then request pasted details.
-- If the workbook currently contains a prior project's data, clear rows below the header unless the user explicitly asks to append.
-- Preserve Chinese place names as provided in start/end columns. For generated route notes, strip prefixes before `|` and use `从A去B`.
-- Excel serial dates should use the workbook's date style, commonly `m/d/yy h:mm`.
+- Didi PDFs often split words and city names across lines (`特惠快\n车`, `杭州\n市`). The script normalizes known service types plus any `XX 市` → `XX市` pattern generically.
+- Some Hellobike PDFs show a grid but no row text. The script warns on zero-result extractions. Confirm by screenshot/table extraction, then paste details via `--trips-json`.
+- Header row is auto-detected by scanning for `序号, 项目号, 日期, 起点, 终点, 金额` column headers. Falls back to row 4 if detection is ambiguous.
+- If the workbook currently contains a prior project's data, the script clears rows below the header unless you omit `--clear-existing`.
+- Preserve Chinese place names as provided in start/end columns. For generated route notes, strip `区|`/`县|` prefixes and use `从A去B`.
+- Excel serial dates use the workbook's date style from the template row, commonly `m/d/yy h:mm`.
 - Validate sums with cents using numeric totals, not formatted text.
+
+## Dependencies
+
+```bash
+npm install pdf-parse xlsx
+```
