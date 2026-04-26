@@ -20,8 +20,8 @@ Use this workflow for:
 node scripts/fill_transport_sheet.js `
   --source "交通明细表.xlsx" `
   --target "交通明细表_已填.xlsx" `
-  --project-no "PAEE2512025" `
-  --project-name "杭州倍特" `
+  --project-no "PAEEXXXX" `
+  --project-name "XX项目" `
   --clear-existing
 ```
 

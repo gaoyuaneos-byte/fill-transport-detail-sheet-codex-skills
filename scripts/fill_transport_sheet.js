@@ -30,7 +30,7 @@ function parseArgs(argv) {
   if (!args.projectNo || !args.projectName) {
     throw new Error(
       '缺少必填参数。用法:\n' +
-      '  node fill_transport_sheet.js --project-no "PAEE2512025" --project-name "杭州倍特" [--source "交通明细表.xlsx"] [--target "输出.xlsx"] [--clear-existing] [--blank-highway-notes] [--source-format didi|hellobike|auto] [--pdf-dir <dir>] [--trips-json <file>] [--work-json <file>]'
+      '  node fill_transport_sheet.js --project-no "PAEEXXXX" --project-name "XX项目" [--source "交通明细表.xlsx"] [--target "输出.xlsx"] [--clear-existing] [--blank-highway-notes] [--source-format didi|hellobike|auto] [--pdf-dir <dir>] [--trips-json <file>] [--work-json <file>]'
     );
   }
   return args;
