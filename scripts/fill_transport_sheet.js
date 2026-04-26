@@ -58,7 +58,7 @@ function normalizeText(text) {
     // Strip page markers that pollute number extraction
     .replace(/页码[：:]\s*\d+\s*\/\s*\d+/g, '')
     .replace(/--\s*\d+\s+of\s+\d+\s*--/g, '')
-    // Generic: "杭州 市" / "石家庄 市" → "杭州市" / "石家庄市"
+    // Generic: "XX 市" → "XX市"
     .replace(/([\p{Script=Han}]{2,8})\s+市/gu, '$1市')
     // Collapse remaining whitespace to single spaces
     .replace(/\s+/g, ' ')
@@ -71,7 +71,7 @@ function normalizeText(text) {
 
 /**
  * Strip the "district|" prefix from a place name, keeping only the detail part.
- * "肥东县|畅和家园-西南门" → "畅和家园-西南门"
+ * "XX县|XX地名" → "XX地名"
  */
 function cleanPlace(s) {
   return String(s || '').replace(/^[^|]+\|/, '').replace(/[()]/g, '').trim();
@@ -88,7 +88,7 @@ function routeNote(start, end) {
  * Split a combined address body into [startAddr, endAddr].
  *
  * Didi PDF bodies look like:
- *   "肥东县|畅和家园-西南门 包河区|合肥南站-西进站口"
+ *   "XX县|XX地名 XX区|XX站-进站口"
  *
  * Strategy: find all "XXX|" patterns (district/road markers).
  * The *second* "XXX|" typically begins the end address.
@@ -202,9 +202,9 @@ function parseDidiText(text, filename) {
  *
  * Expected formats (auto-detected):
  *   Tab-separated:
- *     2026-01-21\t10:27\t合肥市\t肥东县畅和家园\t包河区合肥南站\t39.10
+ *     2026-01-21\t10:27\tXX市\tXX县XX地名\tXX区XX站\t39.10
  *   Multi-space:
- *     2026-01-21  10:27  合肥市  肥东县畅和家园  包河区合肥南站  39.10
+ *     2026-01-21  10:27  XX市  XX县XX地名  XX区XX站  39.10
  *
  * Lines that look like headers (containing 日期/起点/终点 etc.) are skipped.
  */

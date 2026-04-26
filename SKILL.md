@@ -59,9 +59,9 @@ node scripts/fill_transport_sheet.js `
 [
   {
     "dateTime": "2026-01-21 10:27",
-    "city": "合肥市",
-    "start": "肥东县|畅和家园-西南门",
-    "end": "包河区|合肥南站-西进站口",
+    "city": "XX市",
+    "start": "XX区|XX地名",
+    "end": "XX县|XX站-进站口",
     "amount": 39.10,
     "feeType": "行程费"
   }
@@ -88,7 +88,7 @@ Format is detected by filename keywords (`滴滴`/`didi` → Didi, `哈啰`/`hel
 
 ## Notes And Edge Cases
 
-- Didi PDFs often split words and city names across lines (`特惠快\n车`, `杭州\n市`). The script normalizes known service types plus any `XX 市` → `XX市` pattern generically.
+- Didi PDFs often split words and city names across lines (`特惠快\n车`, `XX\n市`). The script normalizes known service types plus any `XX 市` → `XX市` pattern generically.
 - Some Hellobike PDFs show a grid but no row text. The script warns on zero-result extractions. Confirm by screenshot/table extraction, then paste details via `--trips-json`.
 - Header row is auto-detected by scanning for `序号, 项目号, 日期, 起点, 终点, 金额` column headers. Falls back to row 4 if detection is ambiguous.
 - If the workbook currently contains a prior project's data, the script clears rows below the header unless you omit `--clear-existing`.

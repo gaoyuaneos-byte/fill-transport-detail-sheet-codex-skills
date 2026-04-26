@@ -122,9 +122,9 @@ node ~/.openclaw/skills/fill-transport-detail-sheet/scripts/fill_transport_sheet
 [
   {
     "dateTime": "2026-01-21 10:27",
-    "city": "合肥市",
-    "start": "肥东县|畅和家园-西南门",
-    "end": "包河区|合肥南站-西进站口",
+    "city": "XX市",
+    "start": "XX区|XX地名",
+    "end": "XX县|XX站-进站口",
     "amount": 39.10,
     "feeType": "行程费"
   }
